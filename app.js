@@ -1,6 +1,7 @@
 const express=require('express');
 const path=require('path');
 const mongoose=require('mongoose');
+const ejsMate =require('ejs-mate'); // A new Ejs tool for layout
 const Campground=require('./models/campground');
 const methodOverride=require('method-override');
 const campground = require('./models/campground');
@@ -12,7 +13,11 @@ db.once("open",()=>{
     console.log("database Connected");
 });
 const app=express();
+app.engine('ejs',ejsMate);
 app.use(express.urlencoded({extended:true}));
+// Parse URL-encoded data (typically from HTML forms).
+// Make the parsed data available in req.body.
+// Allow complex, nested data structures (when extended: true is used).
 app.use(methodOverride('_method'));
 app.set('view engine','ejs');
 app.set('views',path.join(__dirname,'views'));
