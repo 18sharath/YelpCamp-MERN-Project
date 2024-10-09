@@ -7,6 +7,7 @@ const methodOverride=require('method-override');
 const campground = require('./models/campground');
 const ExpressError=require('./utils/ExpressError');
 const catchAsync=require('./utils/catchAsync');
+const Review=require('./models/reviews')
 const Joi=require('joi');
 // the HTML form only allows the GET and POST methods, but RESTful APIs often require PUT, PATCH, and DELETE methods to perform updates or deletions of resources. The method-override middleware allows you to "override" the HTTP method of a request based on parameters in the request body, query string, or headers.
 mongoose.connect('mongodb://localhost:27017/yelp-camp');
@@ -52,7 +53,7 @@ app.post('/campgrounds',catchAsync(async(req,res,next)=>{
    
 }))
 app.get('/campgrounds/:id',catchAsync(async(req,res)=>{
-    const campground=await Campground.findById(req.params.id);
+    const campground=await Campground.findById(req.params.id).populate('reviews');
     res.render('campgrounds/show',{campground});
 }))
 app.get('/campgrounds/:id/edit',catchAsync(async(req,res)=>{
@@ -74,6 +75,25 @@ app.delete('/campgrounds/:id',catchAsync(async(req,res)=>{
     const {id}=req.params;
     await Campground.findByIdAndDelete(id);
     res.redirect('/campgrounds');
+}))
+
+app.post('/campgrounds/:id/reviews',catchAsync(async(req,res)=>{
+    // res.send('you made it') ;
+    const campground=await Campground.findById(req.params.id);
+    const review=new Review(req.body.review);
+    campground.reviews.push(review);
+    await campground.save();
+    await review.save();
+    res.redirect(`/campgrounds/${campground._id}`)
+}))
+// deleting the reviews
+
+app.delete('/campgrounds/:id/reviews/:reviewId',catchAsync(async(req,res)=>{
+    // res.send('Deleting!!!')
+    const {id,reviewId}=req.params;
+    await Campground.findByIdAndUpdate(id,{$pull:{reviews:reviewId}}); // mongo array
+    await Review.findByIdAndDelete(reviewId);
+    res.redirect(`/campgrounds/${id}`);
 }))
 app.all('*',(req,res,next)=>{
     // res.send('404!!!');
