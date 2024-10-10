@@ -15,5 +15,16 @@ const CampgroundSchema=new Schema({
         }
     ]
 });
-
+CampgroundSchema.post('findOneAndDelete',async function(doc){
+    // console.log('Deleted!!!!');
+    // console.log(doc);
+    if(doc)
+    {
+        await Review.deleteMany({
+            _id:{
+                $in:doc.reviews  // inrder to delete all reviews corresponding to perticular campground
+            }
+        })
+    }
+})
 module.exports=mongoose.model('Campground',CampgroundSchema);
