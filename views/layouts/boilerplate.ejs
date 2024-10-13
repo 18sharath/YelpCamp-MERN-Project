@@ -14,6 +14,8 @@
 <body class="d-flex flex-column vh-100">
     <%- include('../partials/navbar')%>
         <main class="container">
+    <%- include('../partials/flash')%>
+
             <%- body %>
         </main>
         <%- include("../partials/footer")%>
@@ -24,26 +26,30 @@
                 integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V"
                 crossorigin="anonymous"></script>
 
+            <!-- <script src='/javascripts/validateForm.js'></script> -->
             <!-- below one i am using from bootstrap so it will give very nice css to validate form nonvalidate and required i have to use -->
+            
             <script>
                 (() => {
-                    'use strict'
-
+                    'use strict';
+            
                     // Fetch all the forms we want to apply custom Bootstrap validation styles to
-                    const forms = document.querySelectorAll('.validated-form')
-
+                    const forms = document.querySelectorAll('.validated-form');
+            
                     // Loop over them and prevent submission
                     Array.from(forms).forEach(form => {
                         form.addEventListener('submit', event => {
+                            // Check if the form is valid
                             if (!form.checkValidity()) {
-                                event.preventDefault()
-                                event.stopPropagation()
+                                event.preventDefault(); // Prevent submission
+                                event.stopPropagation(); // Stop propagation of the event
                             }
-
-                            form.classList.add('was-validated')
-                        }, false)
+            
+                            // Add Bootstrap validation classes
+                            form.classList.add('was-validated');
+                        })
                     })
-                })()
+                })();
             </script>
 
 </body>
