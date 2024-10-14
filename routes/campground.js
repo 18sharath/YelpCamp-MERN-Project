@@ -3,7 +3,7 @@ const router = express.Router();
 const catchAsync = require('../utils/catchAsync');
 const ExpressError = require('../utils/ExpressError');
 const Campground = require('../models/campground');
-
+const {isLoggedIn}=require('../middleware');
 
 
 
@@ -11,7 +11,8 @@ router.get('/', async (req, res) => {
     const campgrounds = await Campground.find({});
     res.render('campgrounds/index', { campgrounds });
 })
-router.get('/new', (req, res) => {
+router.get('/new',isLoggedIn, (req, res) => {
+   
     res.render('campgrounds/new');
 })
 // router.post('/campgrounds',async(req,res,next)=>{
@@ -23,7 +24,7 @@ router.get('/new', (req, res) => {
 //         next(e);
 //     }
 // })
-router.post('/', catchAsync(async (req, res, next) => {
+router.post('/', isLoggedIn,catchAsync(async (req, res, next) => {
     if (!req.body.campground) throw new ExpressError('Invalid Body', 404);
 
     const campground = new Campground(req.body.campground);
@@ -32,7 +33,7 @@ router.post('/', catchAsync(async (req, res, next) => {
     res.redirect(`campgrounds/${campground._id}`);
 
 }))
-router.get('/:id', catchAsync(async (req, res) => {
+router.get('/:id',catchAsync(async (req, res) => {
     const campground = await Campground.findById(req.params.id).populate('reviews');
     //use of populate
     // Using populate() makes it easier to work with related data. You can access all the information about reviews directly without 

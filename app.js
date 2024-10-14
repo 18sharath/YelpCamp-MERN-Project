@@ -6,14 +6,19 @@ const ejsMate =require('ejs-mate'); // A new Ejs tool for layout
 const methodOverride=require('method-override');
 
 const ExpressError=require('./utils/ExpressError');
-const campgrounds=require('./routes/campground');
-const reviews=require('./routes/reviews');
 
 const passport=require('passport');
 const LocalStrategy=require('passport-local')
 
 const session=require('express-session');
 const flash=require('connect-flash');
+
+const User=require('./models/user');
+
+const userRouter=require('./routes/user');
+const campgroundsRouter=require('./routes/campground');
+const reviewsRouter=require('./routes/reviews');
+
 
 // the HTML form only allows the GET and POST methods, but RESTful APIs often require PUT, PATCH, and DELETE methods to perform updates or deletions of resources. The method-override middleware allows you to "override" the HTTP method of a request based on parameters in the request body, query string, or headers.
 mongoose.connect('mongodb://localhost:27017/yelp-camp');
@@ -57,13 +62,28 @@ app.use((req,res,next)=>{
     next();
     
 })
-
-app.use('/campgrounds',campgrounds); // routing concept
-app.use('/campgrounds/:id/reviews',reviews)  // routing to reviews page
-
+// this should be before any other routes
 app.use(passport.initialize()); // to initialze passport 
 app.use(passport.session());  // if your applications uses persistent login sessions
 
+
+app.get('/fakeUser',async(req,res)=>{
+    const user=new User({email:'sharath@gmaul.com',username:'sharath'}); 
+    const newUser=await User.register(user,'ppp'); // inbuilt in passport-local-mongoose it takes two paramenter username and password and it create a hash code in database
+    res.send(newUser);
+})
+// Promises help avoid "callback hell", where nested callbacks can make code hard to read and maintain. 
+// With promises, you can write cleaner and more manageable asynchronous code.
+
+app.use('/',userRouter);
+app.use('/campgrounds',campgroundsRouter); // routing concept
+app.use('/campgrounds/:id/reviews',reviewsRouter)  // routing to reviews page
+
+
+passport.use(new LocalStrategy(User.authenticate()));
+
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 app.get('/',(req,res)=>{
     res.redirect('/campgrounds') // i  changed here instead of home
 })
@@ -87,3 +107,7 @@ app.use((err,req,res,next)=>{
 app.listen(3000,()=>{
     console.log('serving on port 3000')
 })
+
+
+// Asynchronization (or asynchronous programming) is a concept where tasks can run independently from the main program flow,
+// allowing other operations to proceed without waiting for the completion of these tasks. In other words, it allows you to handle multiple tasks simultaneously, improving the efficiency and responsiveness of your program.
