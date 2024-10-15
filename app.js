@@ -18,6 +18,7 @@ const User=require('./models/user');
 const userRouter=require('./routes/user');
 const campgroundsRouter=require('./routes/campground');
 const reviewsRouter=require('./routes/reviews');
+const { log } = require('console');
 
 
 // the HTML form only allows the GET and POST methods, but RESTful APIs often require PUT, PATCH, and DELETE methods to perform updates or deletions of resources. The method-override middleware allows you to "override" the HTTP method of a request based on parameters in the request body, query string, or headers.
@@ -54,17 +55,18 @@ const sessionconfig={
 
 app.use(session(sessionconfig));
 app.use(flash());
+// this should be before any other routes
+app.use(passport.initialize()); // to initialze passport 
+app.use(passport.session());  // if your applications uses persistent login sessions
 
 app.use((req,res,next)=>{
+    // console.log(req.session);
+    res.locals.currentUser=req.user;
     res.locals.success=req.flash('success');//Setting it in res.locals makes the success message available to all views (templates) 
     // rendered by the server during that request.
     res.locals.error=req.flash('error');
     next();
-    
 })
-// this should be before any other routes
-app.use(passport.initialize()); // to initialze passport 
-app.use(passport.session());  // if your applications uses persistent login sessions
 
 
 app.get('/fakeUser',async(req,res)=>{

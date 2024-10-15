@@ -5,13 +5,13 @@ const Review=require('../models/reviews')
 const Campground=require('../models/campground');
 const catchAsync=require('../utils/catchAsync');
 const ExpressError=require('../utils/ExpressError');
+const {isLoggedIn}=require('../middleware');
 
 
 
 
 
-
-router.post('/',catchAsync(async(req,res)=>{
+router.post('/',isLoggedIn,catchAsync(async(req,res)=>{
     // res.send('you made it') ;
     const {id}=req.params;
     const campground=await Campground.findById(id);
@@ -25,7 +25,7 @@ router.post('/',catchAsync(async(req,res)=>{
 }))
 // deleting the reviews
 
-router.delete('/:reviewId',catchAsync(async(req,res)=>{
+router.delete('/:reviewId',isLoggedIn,catchAsync(async(req,res)=>{
     // res.send('Deleting!!!')
     const {id,reviewId}=req.params;
     await Campground.findByIdAndUpdate(id,{$pull:{reviews:reviewId}}); // mongo array

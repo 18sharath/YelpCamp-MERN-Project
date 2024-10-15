@@ -34,7 +34,9 @@ router.post('/', isLoggedIn,catchAsync(async (req, res, next) => {
 
 }))
 router.get('/:id',catchAsync(async (req, res) => {
-    const campground = await Campground.findById(req.params.id).populate('reviews');
+    const campground = await Campground.findById(req.params.id).populate('reviews').populate('author');
+    console.log(campground);
+    
     //use of populate
     // Using populate() makes it easier to work with related data. You can access all the information about reviews directly without 
     // making additional queries. This is particularly useful for displaying details of related documents (like showing a list of reviews on a campground page).
@@ -63,7 +65,7 @@ router.put('/:id', catchAsync(async (req, res) => {
     // if we remove / in redirect this is depepenedt on current URL after that it appeneds the gieven path
     // if we include / in path it is independent on whatever path we in current html it will always redirect to given path it is best way
 }))
-router.delete('/:id', catchAsync(async (req, res) => {
+router.delete('/:id',isLoggedIn, catchAsync(async (req, res) => {
     const { id } = req.params;
     await Campground.findByIdAndDelete(id);
     req.flash('success', 'Successfully Deleted Campground');
