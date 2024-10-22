@@ -6,12 +6,29 @@ const Campground = require('../models/campground');
 const {isLoggedIn,isAuthor}=require('../middleware');
 const campgrounds=require('../controllers/campgrounds');
 
-
+const multer=require('multer');
+const {storage}=require('../cloudinary')
+// const upload=multer({dest:'uploads/'});
+const upload=multer(storage);
 
 // we can u do this in this format also possible
 router.route('/')
     .get(catchAsync(campgrounds.index))
-    .post(isLoggedIn,catchAsync(campgrounds.createNewForm));
+    // .post(isLoggedIn,catchAsync(campgrounds.createNewForm));
+    // you can upload two files or single file if u use single the req.file otherwise req.files 
+    .post(upload.single('image'),(req,res)=>{
+    //     res.send({
+    //         body:req.body,
+    //         file:req.files
+    // });
+    // res.send('it worked');
+    console.log(req.file);
+    if (req.file && req.file.path) {
+        res.send(`Image uploaded to: ${req.file.path}`);
+    } else {
+        res.send('Image upload failed.');
+    }
+    });
 
 
 router.get('/new',isLoggedIn, campgrounds.renderNewForm);
