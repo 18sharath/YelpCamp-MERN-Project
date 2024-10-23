@@ -5,7 +5,12 @@ const Review=require('./reviews')
 const User=require('./user');
 const CampgroundSchema=new Schema({
     title:String,
-    images:String,
+    images:[
+        {
+            Url:String,
+            filename:String
+        }
+    ],
     price:Number,
     description:String,
     location:String,

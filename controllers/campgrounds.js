@@ -11,12 +11,15 @@ module.exports.renderNewForm=(req, res) => {
     res.render('campgrounds/new');
 }
 
-module.exports.createNewForm=async (req, res, next) => {
+module.exports.createCampground=async (req, res, next) => {
     if (!req.body.campground) throw new ExpressError('Invalid Body', 404);
 
     const campground = new Campground(req.body.campground);
+    campground.images=req.files.map(f=>({Url:f.path,filename:f.filename}));
     campground.author=req.user._id;
     await campground.save();
+    console.log(campground);
+    
     req.flash('success', 'Successfully made a new Campground');
     res.redirect(`campgrounds/${campground._id}`);
 }
@@ -70,6 +73,12 @@ module.exports.editCampground=async (req, res) => {
     //     res.redirect(`/campgrounds/${id}`)
     // }
     const campground = await Campground.findByIdAndUpdate(id, { ...req.body.campground });
+    if (req.files && req.files.length > 0) {
+    const img=req.files.map(f=>({Url:f.path,filename:f.filename}));
+    campground.images.push(...img);
+    }
+    await campground.save();
+
     req.flash('success', 'Successfully Update an Campground');
  
     res.redirect(`/campgrounds/${campground._id}`);
