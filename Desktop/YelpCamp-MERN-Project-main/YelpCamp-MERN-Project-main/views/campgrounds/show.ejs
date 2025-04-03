@@ -1,0 +1,247 @@
+<% layout('/layouts/boilerplate')%>
+<link rel="stylesheet" href="/stylesheets/stars.css">
+
+<div class="container py-4">
+  <div class="row gx-5">
+    <!-- Left Column - Campground Details -->
+    <div class="col-lg-7">
+      <!-- Image Carousel -->
+      <div class="card shadow mb-4 border-0 overflow-hidden rounded-3">
+        <div id="campgroundCarousel" class="carousel slide" data-bs-ride="carousel">
+          <div class="carousel-inner">
+            <% campground.images.forEach((img, i) => { %>
+              <div class="carousel-item <%= i === 0 ? 'active' : '' %>">
+                <img crossorigin="anonymous" src="<%=img.Url%>" class="d-block w-100" alt="<%=campground.title%> image">
+              </div>
+            <% }) %>
+          </div>
+          <% if(campground.images.length > 1) { %>
+            <button class="carousel-control-prev" type="button" data-bs-target="#campgroundCarousel" data-bs-slide="prev">
+              <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#campgroundCarousel" data-bs-slide="next">
+              <span class="carousel-control-next-icon" aria-hidden="true"></span>
+              <span class="visually-hidden">Next</span>
+            </button>
+            <div class="carousel-indicators">
+              <% campground.images.forEach((img, i) => { %>
+                <button type="button" data-bs-target="#campgroundCarousel" data-bs-slide-to="<%= i %>" 
+                  class="<%= i === 0 ? 'active' : '' %>" aria-current="<%= i === 0 ? 'true' : 'false' %>" 
+                  aria-label="Slide <%= i+1 %>"></button>
+              <% }) %>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Campground Information Card -->
+      <div class="card shadow border-0 mb-4 rounded-3">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+          <h3 class="card-title mb-0 fw-bold text-primary"><%=campground.title%></h3>
+          <span class="badge bg-success fs-5">$<%=campground.price%></span>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <i class="fas fa-map-marker-alt text-danger me-2"></i>
+            <span class="text-muted"><%=campground.location%></span>
+          </div>
+          
+          <div class="mb-3">
+            <i class="fas fa-user text-primary me-2"></i>
+            <span>Submitted by <strong><%=campground.author.username%></strong></span>
+          </div>
+          
+          <div class="mb-4">
+            <h5 class="border-bottom pb-2 mb-3">Description</h5>
+            <p class="card-text lead"><%=campground.description%></p>
+          </div>
+          
+          <div class="d-flex justify-content-between">
+            <small class="text-muted"><i class="far fa-clock me-1"></i> Added 2 days ago</small>
+            
+            <% if(currentUser && campground.author.equals(currentUser._id)){ %>
+              <div>
+                <a class="btn btn-warning" href="/campgrounds/<%=campground._id%>/edit">
+                  <i class="fas fa-edit me-1"></i> Edit
+                </a>
+                <form class="d-inline" action="/campgrounds/<%=campground._id%>?_method=DELETE" method="post">
+                  <button class="btn btn-danger">
+                    <i class="fas fa-trash-alt me-1"></i> Delete
+                  </button>
+                </form>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Map Card -->
+      <div class="card shadow border-0 rounded-3 overflow-hidden">
+        <div class="card-header bg-white py-3">
+          <h5 class="mb-0"><i class="fas fa-map me-2"></i>Location</h5>
+        </div>
+        <div id="map" style="height: 400px; width: 100%;"></div>
+      </div>
+    </div>
+    
+    <!-- Right Column - Reviews -->
+    <div class="col-lg-5">
+      <!-- Review Form -->
+      <% if(currentUser){ %>
+        <div class="card shadow border-0 mb-4 rounded-3">
+          <div class="card-header bg-white py-3">
+            <h4 class="mb-0"><i class="far fa-star me-2"></i>Leave a Review</h4>
+          </div>
+          <div class="card-body">
+            <form action="/campgrounds/<%=campground._id%>/reviews" class="validated-form" method="POST" novalidate>
+              <fieldset class="starability-basic mb-3">
+                <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="1" checked aria-label="No rating." />
+                <input type="radio" id="first-rate1" name="review[rating]" value="1" />
+                <label for="first-rate1" title="Terrible">1 star</label>
+                <input type="radio" id="first-rate2" name="review[rating]" value="2" />
+                <label for="first-rate2" title="Not good">2 stars</label>
+                <input type="radio" id="first-rate3" name="review[rating]" value="3" />
+                <label for="first-rate3" title="Average">3 stars</label>
+                <input type="radio" id="first-rate4" name="review[rating]" value="4" />
+                <label for="first-rate4" title="Very good">4 stars</label>
+                <input type="radio" id="first-rate5" name="review[rating]" value="5" />
+                <label for="first-rate5" title="Amazing">5 stars</label>
+              </fieldset>
+              
+              <div class="mb-3">
+                <textarea class="form-control" name="review[body]" id="body" 
+                  placeholder="Share your experience at this campground..." rows="4" required></textarea>
+                <div class="valid-feedback">
+                  Looks good!
+                </div>
+              </div>
+              
+              <button class="btn btn-success w-100">
+                <i class="far fa-paper-plane me-1"></i> Submit Review
+              </button>
+            </form>
+          </div>
+        </div>
+      <% } else { %>
+        <div class="card shadow border-0 mb-4 text-center p-4 rounded-3">
+          <p class="mb-2"><i class="fas fa-info-circle text-primary me-2"></i>Want to leave a review?</p>
+          <a href="/login" class="btn btn-primary">Log In</a>
+        </div>
+      <% } %>
+      
+      <!-- Reviews List -->
+      <div class="card shadow border-0 rounded-3">
+        <div class="card-header bg-white py-3">
+          <h4 class="mb-0">
+            <i class="fas fa-comments me-2"></i>
+            Reviews <span class="badge bg-secondary rounded-pill"><%= campground.reviews.length %></span>
+          </h4>
+        </div>
+        
+        <div class="card-body p-0">
+          <% if (campground.reviews.length === 0) { %>
+            <div class="text-center py-5">
+              <i class="far fa-comment-dots fa-3x text-muted mb-3"></i>
+              <h5 class="text-muted">No reviews yet</h5>
+              <p class="text-muted">Be the first to review this campground!</p>
+            </div>
+          <% } %>
+          
+          <div class="review-list">
+            <% for (let rev of campground.reviews) { %>
+              <div class="review-item p-3 border-bottom">
+                <div class="d-flex justify-content-between mb-2">
+                  <div>
+                    <h5 class="m-0">
+                      <i class="fas fa-user-circle me-2"></i>
+                      <%= rev.author && rev.author.username ? rev.author.username : 'Anonymous' %>
+                    </h5>
+                  </div>
+                  <% if (currentUser && rev.author && rev.author._id && rev.author._id.equals(currentUser._id)) { %>
+                    <form action="/campgrounds/<%=campground._id%>/reviews/<%=rev._id%>?_method=DELETE" method="POST">
+                      <button class="btn btn-sm btn-outline-danger">
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                    </form>
+                  <% } %>
+                </div>
+                <p class="starability-result mb-2" data-rating="<%=rev.rating%>">
+                  Rated: <%=rev.rating%>
+                </p>
+                <p class="review-text mb-1"><%= rev.body %></p>
+                <small class="text-muted">Posted 3 days ago</small>
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Back button -->
+  <div class="mt-4">
+    <a href="/campgrounds" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-left me-1"></i> Back to All Campgrounds
+    </a>
+  </div>
+</div>
+
+<script>
+  const maptilerApiKey = '<%- process.env.MAPTILER_API_KEY %>';
+  const campground = <%- JSON.stringify(campground) %>;
+</script>
+
+<script src="/javascripts/showPageMap.js"></script>
+
+<!-- Add Font Awesome if not already included in layout -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<style>
+  /* Custom styles */
+  .carousel-item img {
+    height: 50vh;
+    object-fit: cover;
+  }
+  
+  .review-list {
+    max-height: 600px;
+    overflow-y: auto;
+  }
+  
+  .review-item:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+  }
+  
+  /* Custom carousel indicators */
+  .carousel-indicators {
+    bottom: 0;
+    margin-bottom: 0.5rem;
+  }
+  
+  .carousel-indicators button {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.7);
+  }
+  
+  .carousel-indicators button.active {
+    background-color: white;
+  }
+  
+  /* Card hover effect */
+  .card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  /* Fix for carousel controls */
+  .carousel-control-prev, .carousel-control-next {
+    z-index: 10;
+  }
+</style>
