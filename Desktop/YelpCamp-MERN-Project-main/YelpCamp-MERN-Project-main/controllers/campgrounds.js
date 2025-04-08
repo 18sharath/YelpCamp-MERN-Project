@@ -76,13 +76,17 @@ module.exports.renderEditForm = async (req, res) => {
 module.exports.editCampground = async (req, res) => {
     const { id } = req.params;
 
+
     // Update basic campground details
     const campground = await Campground.findByIdAndUpdate(id, { ...req.body.campground });
     const geoData = await maptilerClient.geocoding.forward(req.body.campground.location, { limit: 1 });
     campground.geometry = geoData.features[0].geometry;
     // Add new images if uploaded
+    console.log();
     if (req.files && req.files.length > 0) {
+        
         const newImages = req.files.map(f => ({ Url: f.path, filename: f.filename }));
+        
         campground.images.push(...newImages); // Push new images into existing array
     }
     await campground.save();  // Save after adding new images
